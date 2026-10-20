@@ -1,9 +1,0 @@
-[project]
-name = "msoe-ai-club-rockwell-automation-nvidia-hackath-miles-trompeter-s-team-7a3c5baf8f"
-version = "0.1.0"
-description = "Add your description here"
-readme = "README.md"
-requires-python = ">=3.14"
-dependencies = [
-    "ultralytics>=8.4.178",
-]
