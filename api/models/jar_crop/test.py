@@ -1,5 +1,5 @@
 """Draw predicted vial boxes on a held-out test image and save the crops."""
-
+# codex resume 01a15a9a-b919-7e80-b25f-94c85eb22fad
 import argparse
 from pathlib import Path
 
