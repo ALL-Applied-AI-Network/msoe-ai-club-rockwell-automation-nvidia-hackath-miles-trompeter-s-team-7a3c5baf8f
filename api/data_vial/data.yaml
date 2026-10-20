@@ -1,0 +1,7 @@
+path: C:/git/ai_club/msoe-ai-club-rockwell-automation-nvidia-hackath-miles-trompeter-s-team-7a3c5baf8f/api/data_vial
+train: train/images
+val: valid/images
+test: test/images
+nc: 1
+names:
+  0: vial

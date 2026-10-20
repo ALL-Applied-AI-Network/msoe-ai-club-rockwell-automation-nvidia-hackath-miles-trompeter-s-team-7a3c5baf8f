@@ -1,0 +1,20 @@
+{
+  "train": {
+    "images": 709,
+    "vials": 1383,
+    "removed": 135,
+    "polygons_converted": 3
+  },
+  "valid": {
+    "images": 101,
+    "vials": 197,
+    "removed": 21,
+    "polygons_converted": 0
+  },
+  "test": {
+    "images": 203,
+    "vials": 397,
+    "removed": 31,
+    "polygons_converted": 0
+  }
+}
