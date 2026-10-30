@@ -1,0 +1,49 @@
+# =============================================================================
+# Fill Line Inspection - Cap/Seal Camera Configuration
+# =============================================================================
+# The third of three independent streams (see config.vial_fill.yaml and
+# config.tank_level.yaml for the other two, and for the shared design
+# notes). Point any script at this stream with --config, e.g.:
+#   python3 src/capture_gui.py --cap-seal-config config.cap_seal.yaml
+# This repo is capture-only: labeling and splitting into Training/Testing/
+# Validation are handled by a separate process outside this repo.
+# =============================================================================
+
+project:
+  name: "cap-seal-inspection"
+  display_name: "Cap/Seal"
+  description: >
+    Camera watching caps/seals as they're applied to filled vials,
+    capturing the seal condition for downstream quality review.
+
+# -----------------------------------------------------------------------------
+# Camera settings (USB camera watching the capping/sealing station)
+# -----------------------------------------------------------------------------
+camera:
+  # A stable /dev/v4l/by-id/ path (survives reboots/reconnects) is safer
+  # than a raw /dev/videoN index, which the kernel can renumber - run
+  # `ls -la /dev/v4l/by-id/` to find yours and confirm with each camera's
+  # live preview which physical unit this is. A plain integer still works
+  # if you prefer it.
+  device_index: "/dev/v4l/by-id/usb-USB_CAMERA_USB_CAMERA_240725172848-video-index0"
+  # All 3 cameras share ONE internal USB 2.0 hub on this machine (confirmed
+  # via `lsusb -t`), so their combined bandwidth is capped well below what
+  # 3x 1920x1080 MJPG needs - the 3rd camera would open but deliver zero
+  # frames. 640x480 on all three is the largest shared setting that tested
+  # reliably; go back to 1920x1080 once the cameras are split across
+  # separate USB controllers/ports (or a powered hub on a different bus).
+  width: 640
+  height: 480
+  fourcc: "MJPG"
+  warmup_frames: 15
+  jpeg_quality: 95
+
+# -----------------------------------------------------------------------------
+# Paths (relative to repo root). Dataset stills/metadata stay under data/;
+# operator-owned continuous recordings are kept separately under recordings/.
+# -----------------------------------------------------------------------------
+paths:
+  detection_root: "data/cap_seal"
+  detection_images_incoming: "data/cap_seal/images/incoming"
+  detection_videos_dir: "recordings/cap_seal"           # continuous H.264 .mp4 recordings
+  capture_metadata_csv: "data/cap_seal/capture_metadata.csv"

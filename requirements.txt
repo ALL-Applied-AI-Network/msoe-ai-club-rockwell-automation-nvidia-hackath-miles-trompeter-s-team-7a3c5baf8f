@@ -1,0 +1,11 @@
+opencv-python>=4.9.0
+numpy>=1.24
+PyYAML>=6.0
+Pillow>=10.0
+# capture_gui.py and annotate.py also need the tkinter system package, which
+# is NOT installable via pip:
+#   sudo apt install python3-tk
+#
+# Timelapse video recording (capture_gui.py) needs the ffmpeg command-line
+# tool, also not a pip package:
+#   sudo apt install ffmpeg

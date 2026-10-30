@@ -1,0 +1,54 @@
+# =============================================================================
+# Fill Line Inspection - Vial Fill Camera Configuration
+# =============================================================================
+# One of three independent streams in this project (see config.tank_level.yaml
+# and config.cap_seal.yaml for the others). Every script here is pointed at
+# ONE stream at a time via --config, e.g.:
+#   python3 src/capture_gui.py --vial-fill-config config.vial_fill.yaml
+# The three streams share all the code in src/ but never mix data - they
+# capture into separate data/<stream>/ folders. This repo is capture-only:
+# labeling and splitting into Training/Testing/Validation are handled by a
+# separate process outside this repo.
+# =============================================================================
+
+project:
+  name: "vial-fill-inspection"
+  display_name: "Vial Fill"   # shown in window titles and printed output
+  description: >
+    Camera watching vials as they're filled at the filling station,
+    capturing the liquid color/level for downstream quality review.
+
+# -----------------------------------------------------------------------------
+# Camera settings (USB camera watching the filling station)
+# -----------------------------------------------------------------------------
+camera:
+  # A stable /dev/v4l/by-id/ path (survives reboots/reconnects) is safer
+  # than a raw /dev/videoN index, which the kernel can renumber - run
+  # `ls -la /dev/v4l/by-id/` to find yours and confirm with each camera's
+  # live preview which physical unit this is. A plain integer still works
+  # if you prefer it.
+  device_index: "/dev/v4l/by-id/usb-4K_USB_CAMERA_HD_USB_CAMERA_01.00.00-video-index0"
+  # All 3 cameras share ONE internal USB 2.0 hub on this machine (confirmed
+  # via `lsusb -t`), so their combined bandwidth is capped well below what
+  # 3x 1920x1080 MJPG needs - the 3rd camera would open but deliver zero
+  # frames. 640x480 on all three is the largest shared setting that tested
+  # reliably; go back to 1920x1080 once the cameras are split across
+  # separate USB controllers/ports (or a powered hub on a different bus).
+  width: 640
+  height: 480
+  fourcc: "MJPG"
+  warmup_frames: 30
+  # After warmup, freeze the auto-settled exposure and white balance so vial
+  # colour is comparable across the whole session (logged with each recording).
+  lock_exposure_wb: false  # true made this camera very dark (bad auto-exposure readback)
+  jpeg_quality: 95
+
+# -----------------------------------------------------------------------------
+# Paths (relative to repo root). Dataset stills/metadata stay under data/;
+# operator-owned continuous recordings are kept separately under recordings/.
+# -----------------------------------------------------------------------------
+paths:
+  detection_root: "data/vial_fill"
+  detection_images_incoming: "data/vial_fill/images/incoming"
+  detection_videos_dir: "recordings/vial_fill"           # continuous H.264 .mp4 recordings
+  capture_metadata_csv: "data/vial_fill/capture_metadata.csv"

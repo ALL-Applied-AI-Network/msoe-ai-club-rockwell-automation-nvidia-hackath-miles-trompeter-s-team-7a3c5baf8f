@@ -1,0 +1,482 @@
+<title>Fill Line Capture SOP</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Archivo+Expanded:wght@600;700;800&family=Public+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap');
+
+  :root{
+    --paper:#F6F1E7;
+    --surface:#FFFFFF;
+    --surface-2:#FBF7EE;
+    --ink:#211C14;
+    --ink-soft:#6B6252;
+    --ink-faint:#948A76;
+    --line:#E3D9C3;
+    --accent:#D9631B;
+    --accent-ink:#FFFFFF;
+    --accent-soft:#F7E3CD;
+    --blue:#1E5C86;
+    --blue-soft:#DEE9F1;
+    --pass:#2E7D4F;
+    --pass-soft:#E1F0E5;
+    --fail:#B23A2E;
+    --fail-soft:#F6E2DF;
+    --focus:#1E5C86;
+    --shadow: 0 1px 2px rgba(33,28,20,0.06), 0 8px 24px -12px rgba(33,28,20,0.18);
+  }
+
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --paper:#16130F;
+      --surface:#1E1912;
+      --surface-2:#231D15;
+      --ink:#F1EADA;
+      --ink-soft:#BDB09B;
+      --ink-faint:#8C806D;
+      --line:#392F21;
+      --accent:#F0863C;
+      --accent-ink:#1B1208;
+      --accent-soft:#3A2818;
+      --blue:#7BB0D6;
+      --blue-soft:#1C2C36;
+      --pass:#5CB781;
+      --pass-soft:#1B2E22;
+      --fail:#E27568;
+      --fail-soft:#33201E;
+      --focus:#7BB0D6;
+      --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px -12px rgba(0,0,0,0.5);
+    }
+  }
+  :root[data-theme="dark"]{
+    --paper:#16130F;
+    --surface:#1E1912;
+    --surface-2:#231D15;
+    --ink:#F1EADA;
+    --ink-soft:#BDB09B;
+    --ink-faint:#8C806D;
+    --line:#392F21;
+    --accent:#F0863C;
+    --accent-ink:#1B1208;
+    --accent-soft:#3A2818;
+    --blue:#7BB0D6;
+    --blue-soft:#1C2C36;
+    --pass:#5CB781;
+    --pass-soft:#1B2E22;
+    --fail:#E27568;
+    --fail-soft:#33201E;
+    --focus:#7BB0D6;
+    --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px -12px rgba(0,0,0,0.5);
+  }
+
+  *{box-sizing:border-box;}
+  body{
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'Public Sans', system-ui, -apple-system, "Segoe UI", sans-serif;
+    line-height:1.55;
+    padding-inline:20px;
+    padding-block:32px 64px;
+  }
+  .sheet{max-width:760px; margin:0 auto;}
+
+  .eyebrow{
+    font:700 0.72rem/1 'Public Sans', sans-serif;
+    letter-spacing:0.12em;
+    text-transform:uppercase;
+    color:var(--accent);
+  }
+  h1,h2,h3{text-wrap:balance; font-family:'Archivo Expanded', 'Public Sans', sans-serif; margin:0;}
+  code, .mono{font-family:'IBM Plex Mono','SFMono-Regular',Consolas,monospace;}
+
+  /* ---------- header placard ---------- */
+  .placard{
+    background:var(--surface);
+    border:1px solid var(--line);
+    border-radius:14px;
+    box-shadow:var(--shadow);
+    padding:28px 28px 24px;
+    margin-bottom:22px;
+    position:relative;
+    overflow:hidden;
+  }
+  .placard::before{
+    content:"";
+    position:absolute; inset:0 0 auto 0; height:6px;
+    background:linear-gradient(90deg, var(--accent), var(--blue));
+  }
+  .placard-top{
+    display:flex; justify-content:space-between; align-items:flex-start; gap:16px; flex-wrap:wrap;
+  }
+  h1.title{font-size:clamp(1.6rem, 1.15rem + 1.6vw, 2.35rem); font-weight:800; margin-top:6px; color:var(--ink);}
+  .meta-row{
+    display:flex; flex-wrap:wrap; gap:10px 20px; margin-top:16px;
+    font-size:0.85rem; color:var(--ink-soft);
+  }
+  .meta-row b{color:var(--ink); font-weight:600;}
+  .print-btn{
+    display:inline-flex; align-items:center; gap:8px;
+    background:var(--ink); color:var(--paper);
+    border:none; border-radius:999px; padding:9px 16px;
+    font:600 0.82rem 'Public Sans', sans-serif; cursor:pointer;
+    white-space:nowrap;
+  }
+  .print-btn:hover{opacity:0.88;}
+  .print-btn:focus-visible, a:focus-visible, button:focus-visible, input:focus-visible{
+    outline:2px solid var(--focus); outline-offset:2px;
+  }
+
+  .stations{
+    display:flex; gap:8px; margin-top:18px; flex-wrap:wrap;
+  }
+  .station-chip{
+    display:flex; align-items:center; gap:6px;
+    background:var(--surface-2); border:1px solid var(--line);
+    border-radius:8px; padding:6px 10px;
+    font:600 0.78rem 'Public Sans', sans-serif; color:var(--ink-soft);
+  }
+  .station-chip svg{width:15px; height:15px; flex:none; color:var(--ink-faint);}
+
+  /* ---------- checklist card ---------- */
+  .card{
+    background:var(--surface); border:1px solid var(--line); border-radius:14px;
+    padding:20px 22px; margin-bottom:22px; box-shadow:var(--shadow);
+  }
+  .card h2{font-size:1.05rem; font-weight:700; margin-bottom:4px;}
+  .card .sub{font-size:0.85rem; color:var(--ink-soft); margin-bottom:14px;}
+  .checklist{list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:2px;}
+  .checklist li{border-radius:8px;}
+  .checklist label{
+    display:flex; align-items:flex-start; gap:10px;
+    padding:9px 8px; border-radius:8px; cursor:pointer; font-size:0.94rem;
+  }
+  .checklist label:hover{background:var(--surface-2);}
+  .checklist input[type="checkbox"]{
+    appearance:none; width:19px; height:19px; flex:none; margin-top:1px;
+    border:1.5px solid var(--ink-faint); border-radius:5px; background:var(--surface);
+    display:grid; place-content:center; cursor:pointer;
+  }
+  .checklist input[type="checkbox"]::before{
+    content:""; width:11px; height:11px;
+    clip-path:polygon(14% 44%, 0 65%, 39% 100%, 100% 16%, 82% 0%, 39% 65%);
+    background:var(--accent); transform:scale(0); transition:transform .12s ease;
+  }
+  .checklist input[type="checkbox"]:checked::before{transform:scale(1);}
+  .checklist input[type="checkbox"]:checked ~ span{color:var(--ink-faint); text-decoration:line-through;}
+  .progress-row{display:flex; align-items:center; gap:10px; margin-top:14px;}
+  .progress-track{flex:1; height:6px; border-radius:99px; background:var(--surface-2); overflow:hidden;}
+  .progress-fill{height:100%; background:var(--accent); width:0%; transition:width .2s ease;}
+  .progress-text{font:600 0.78rem 'IBM Plex Mono', monospace; color:var(--ink-soft); white-space:nowrap;}
+  .reset-link{
+    background:none; border:none; padding:0; margin-top:10px;
+    font:600 0.78rem 'Public Sans', sans-serif; color:var(--ink-faint);
+    text-decoration:underline; cursor:pointer;
+  }
+
+  /* ---------- procedure ---------- */
+  .procedure{position:relative; padding-left:54px; margin-bottom:8px;}
+  .procedure::before{
+    content:""; position:absolute; left:23px; top:6px; bottom:6px; width:2px;
+    background:repeating-linear-gradient(var(--line) 0 6px, transparent 6px 11px);
+  }
+  .step{position:relative; margin-bottom:26px;}
+  .step:last-child{margin-bottom:0;}
+  .step-num{
+    position:absolute; left:-54px; top:0; width:46px; height:46px;
+    background:var(--surface); border:2px solid var(--accent); border-radius:10px;
+    display:grid; place-content:center;
+    font:800 1.3rem 'Archivo Expanded', sans-serif; color:var(--accent);
+    box-shadow:var(--shadow);
+  }
+  .step-body{
+    background:var(--surface); border:1px solid var(--line); border-radius:12px;
+    padding:16px 18px 18px; box-shadow:var(--shadow);
+  }
+  .step h3{font-size:1.08rem; font-weight:700; display:flex; align-items:center; gap:9px;}
+  .step h3 svg{width:19px; height:19px; color:var(--accent); flex:none;}
+  .step p{margin:8px 0 0; color:var(--ink); font-size:0.96rem;}
+  .step ul{margin:10px 0 0; padding-left:1.2em; font-size:0.95rem;}
+  .step li{margin-bottom:6px;}
+  .step li:last-child{margin-bottom:0;}
+  .callout{
+    margin-top:12px; padding:10px 12px; border-radius:9px;
+    background:var(--blue-soft); border:1px solid color-mix(in srgb, var(--blue) 30%, transparent);
+    font-size:0.88rem; color:var(--ink); display:flex; gap:9px; align-items:flex-start;
+  }
+  .callout svg{width:17px; height:17px; color:var(--blue); flex:none; margin-top:2px;}
+  .callout b{color:var(--blue);}
+
+  /* sub-station strip for step 4 */
+  .stations-strip{
+    display:grid; grid-template-columns:repeat(auto-fit, minmax(190px,1fr));
+    gap:10px; margin-top:14px;
+  }
+  .station-card{
+    border:1px solid var(--line); border-radius:10px; padding:12px 13px;
+    background:var(--surface-2);
+  }
+  .station-card .label{
+    display:flex; align-items:center; gap:7px;
+    font:700 0.85rem 'Public Sans', sans-serif; margin-bottom:6px;
+  }
+  .station-card .label svg{width:16px; height:16px; color:var(--accent);}
+  .station-card .when{font-size:0.82rem; color:var(--ink-soft);}
+  .station-card .letter{
+    display:inline-grid; place-content:center; width:20px; height:20px;
+    border-radius:5px; background:var(--accent-soft); color:var(--accent);
+    font:700 0.72rem 'IBM Plex Mono', monospace; flex:none;
+  }
+
+  .button-row{display:flex; flex-wrap:wrap; gap:8px; margin-top:12px;}
+  .pill{
+    font:600 0.78rem 'IBM Plex Mono', monospace;
+    border:1px solid var(--line); border-radius:999px; padding:4px 11px;
+    color:var(--ink-soft); background:var(--surface);
+  }
+
+  /* ---------- troubleshooting table ---------- */
+  table{width:100%; border-collapse:collapse; font-size:0.9rem;}
+  thead th{
+    text-align:left; font:700 0.72rem 'Public Sans',sans-serif; text-transform:uppercase;
+    letter-spacing:0.06em; color:var(--ink-faint); padding:0 10px 8px; border-bottom:1px solid var(--line);
+  }
+  tbody td{padding:11px 10px; border-bottom:1px solid var(--line); vertical-align:top;}
+  tbody tr:last-child td{border-bottom:none;}
+  .table-wrap{overflow-x:auto;}
+
+  /* ---------- do / dont ---------- */
+  .dodont{display:grid; grid-template-columns:1fr 1fr; gap:14px;}
+  @media (max-width:520px){.dodont{grid-template-columns:1fr;}}
+  .dodont .col{border-radius:12px; padding:15px 16px;}
+  .dodont .do{background:var(--pass-soft); border:1px solid color-mix(in srgb, var(--pass) 35%, transparent);}
+  .dodont .dont{background:var(--fail-soft); border:1px solid color-mix(in srgb, var(--fail) 35%, transparent);}
+  .dodont h3{font-size:0.95rem; display:flex; align-items:center; gap:7px; margin-bottom:8px;}
+  .dodont .do h3{color:var(--pass);}
+  .dodont .dont h3{color:var(--fail);}
+  .dodont ul{margin:0; padding-left:1.1em; font-size:0.9rem;}
+  .dodont li{margin-bottom:6px;}
+  .dodont svg{width:16px; height:16px;}
+
+  footer{
+    margin-top:28px; padding-top:16px; border-top:1px solid var(--line);
+    font-size:0.8rem; color:var(--ink-faint); display:flex; justify-content:space-between; flex-wrap:wrap; gap:8px;
+  }
+
+  @media print{
+    :root{
+      --paper:#FFFFFF; --surface:#FFFFFF; --surface-2:#F7F7F7; --ink:#000000;
+      --ink-soft:#333333; --ink-faint:#555555; --line:#CCCCCC;
+    }
+    body{padding:0;}
+    .print-btn{display:none;}
+    .placard, .card, .step-body{box-shadow:none;}
+    .procedure::before{background:repeating-linear-gradient(#ccc 0 6px, transparent 6px 11px);}
+  }
+</style>
+
+<div class="sheet">
+
+  <div class="placard">
+    <div class="placard-top">
+      <div>
+        <div class="eyebrow">Standard Operating Procedure</div>
+        <h1 class="title">Fill Line Image Capture</h1>
+      </div>
+      <button class="print-btn" onclick="window.print()" type="button">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><path d="M6 9V2h12v7"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><path d="M6 14h12v8H6z"/></svg>
+        Print SOP
+      </button>
+    </div>
+    <div class="meta-row">
+      <span>For: <b>new operators</b></span>
+      <span>Applies to: <b>Vial Fill · Tank Level · Cap/Seal cameras</b></span>
+      <span>Rev. <b>2026-09-22</b></span>
+    </div>
+    <div class="stations">
+      <span class="station-chip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 2h6v3H9z"/><path d="M8 5h8l1 15a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2z"/></svg> 1. Vial Fill</span>
+      <span class="station-chip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16v16H4z"/><path d="M4 13h16"/></svg> 2. Tank Level</span>
+      <span class="station-chip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8"/><path d="M12 9v3l2 2"/></svg> 3. Cap/Seal</span>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Before you start</h2>
+    <div class="sub">Check these off as you confirm them.</div>
+    <ul class="checklist" id="checklist">
+      <li><label><input type="checkbox" data-key="c1"><span>All three cameras are plugged in and aimed at their station (Vial Fill, Tank Level, Cap/Seal).</span></label></li>
+      <li><label><input type="checkbox" data-key="c2"><span>The capture program isn't already open on this computer (only one copy should run at a time).</span></label></li>
+      <li><label><input type="checkbox" data-key="c3"><span>You know which Order / Run # to start from - ask a supervisor if this is a new batch.</span></label></li>
+    </ul>
+    <div class="progress-row">
+      <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+      <div class="progress-text" id="progressText">0 / 3</div>
+    </div>
+    <button class="reset-link" id="resetChecklist" type="button">Reset checklist</button>
+  </div>
+
+  <div class="procedure">
+
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="14" height="10" rx="2"/><path d="M16 10l6-3v10l-6-3"/></svg>Start the program</h3>
+        <ul>
+          <li>Double-click <code>start_capture.sh</code> in the project folder.</li>
+          <li>Wait about 10 seconds. A window opens with three live video panels: <b>Vial Fill</b> (left), <b>Tank Level</b> (middle), <b>Cap/Seal</b> (right).</li>
+        </ul>
+        <div class="callout">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v5"/><path d="M12 16h.01"/></svg>
+          <div>If a panel says <b>"No camera detected"</b> instead of showing video, click <span class="mono">Reconnect Camera</span> in that panel. Still nothing? Get a supervisor - don't unplug or replug the cameras yourself.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M4 12h16M4 17h10"/></svg>Leave the Batch ID as-is</h3>
+        <p>At the top of the window, <b>Batch ID</b> is already filled in for you, like <span class="mono">2026-09-0003</span>. It's generated automatically for this work session - leave it alone unless a supervisor tells you otherwise.</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-body">
+        <h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M6 15V9a3 3 0 0 1 3-3h6"/></svg>Start Vial Fill + Tank Level capture</h3>
+        <p>Below the top bar is a <b>Synchronized Capture</b> control for the Vial Fill and Tank Level cameras. Set the rate (seconds between shots) if it isn't already right, then click <span class="mono">● Start</span>. From then on, both cameras save a picture together, automatically, at that rate - you don't touch them again until the end of the shift.</p>
+        <div class="callout">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v5"/><path d="M12 16h.01"/></svg>
+          <div>Do this <b>once</b> at the start of the shift or batch, not per vial. Leave it running the whole time.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">4</div>
+      <div class="step-body">
+        <h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v4M12 18v4M4.9 4.9l2.8 2.8M16.3 16.3l2.8 2.8M2 12h4M18 12h4M4.9 19.1l2.8-2.8M16.3 7.7l2.8-2.8"/></svg>Set the Order / Run # for this vial</h3>
+        <p><b>Order / Run #</b>, next to Batch ID, tags which vial the Cap/Seal photo below belongs to. Make sure it matches the vial currently reaching the Cap/Seal station - start at <span class="mono">1</span> for a brand-new batch.</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">5</div>
+      <div class="step-body">
+        <h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>Capture this vial at Cap/Seal</h3>
+        <p>Once this vial is capped and sealed, click <span class="mono">Capture</span> on the Cap/Seal panel, check the frozen picture looks good, then click <span class="mono">Save</span> - or <span class="mono">Retake</span> if it's blurry or cut off.</p>
+        <div class="callout">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v5"/><path d="M12 16h.01"/></svg>
+          <div>Vial Fill and Tank Level don't have Capture/Save buttons anymore - they're already running from Step 3.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">6</div>
+      <div class="step-body">
+        <h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>Move to the next vial</h3>
+        <p>Once Cap/Seal's photo for this vial is saved, click <span class="mono">Next Order ▸</span> one time. Then repeat Steps 4-6 for the next vial.</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">7</div>
+      <div class="step-body">
+        <h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg>End of shift or batch</h3>
+        <p>Click <span class="mono">Stop</span> on the Synchronized Capture bar (and on the Video Capture bar too, if a supervisor had you start it) then click <span class="mono">Exit</span> in the bottom-right corner. All three cameras are released automatically - it's always safe to close the window this way.</p>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="card" style="margin-top:22px;">
+    <h2>Optional: recording video</h2>
+    <p style="margin-top:0; font-size:0.94rem;">There's a separate <b>Video Capture</b> bar (below Synchronized Capture) that records plain continuous video from all three cameras at once - not part of the normal per-vial routine above. Only use it if a supervisor asks you to: click <span class="mono">● Start Recording</span> at the start of the period they want recorded, <span class="mono">Stop Recording</span> at the end. It runs fine alongside everything in Steps 3-6.</p>
+  </div>
+
+  <div class="card" style="margin-top:22px;">
+    <h2>If something looks wrong</h2>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>You see</th><th>Do this</th></tr></thead>
+        <tbody>
+          <tr><td>A panel says "No camera detected"</td><td>Click <span class="mono">Reconnect Camera</span> in that panel.</td></tr>
+          <tr><td>Video is frozen or black</td><td>Click <span class="mono">Exit</span>, then start the program again.</td></tr>
+          <tr><td>Synchronized Capture stopped by itself</td><td>One of the two cameras lost connection - check that panel, click <span class="mono">Reconnect Camera</span> if needed, then click <span class="mono">Start</span> again.</td></tr>
+          <tr><td>The wrong station's video is in the wrong panel</td><td>Don't try to fix it yourself - tell a supervisor.</td></tr>
+          <tr><td>Not sure what Order / Run # to use</td><td>Ask a supervisor. Don't guess.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:22px;">
+    <div class="dodont">
+      <div class="col do">
+        <h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>Do</h3>
+        <ul>
+          <li>Start Synchronized Capture once, at the start of the shift, and leave it running.</li>
+          <li>Capture at Cap/Seal right when each vial is capped and sealed.</li>
+          <li>Use Retake if a Cap/Seal picture is blurry, dark, or cut off.</li>
+          <li>Click Next Order only after Cap/Seal's photo for that vial is saved.</li>
+        </ul>
+      </div>
+      <div class="col dont">
+        <h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg>Don't</h3>
+        <ul>
+          <li>Unplug or replug a camera while the program is running.</li>
+          <li>Change any settings you weren't shown in training.</li>
+          <li>Run a second copy of the program at the same time.</li>
+          <li>Stop and restart Synchronized Capture mid-shift unless a camera dropped.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <span>Fill Line Image Capture SOP</span>
+    <span>Questions? Ask your supervisor.</span>
+  </footer>
+
+</div>
+
+<script>
+(function(){
+  var STORAGE_KEY = 'fillLineSOP.checklist.v1';
+  var boxes = Array.prototype.slice.call(document.querySelectorAll('#checklist input[type="checkbox"]'));
+  var fill = document.getElementById('progressFill');
+  var text = document.getElementById('progressText');
+
+  function load(){
+    try{
+      var raw = localStorage.getItem(STORAGE_KEY);
+      return raw ? JSON.parse(raw) : {};
+    }catch(e){ return {}; }
+  }
+  function save(state){
+    try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }catch(e){}
+  }
+  function updateProgress(){
+    var checked = boxes.filter(function(b){ return b.checked; }).length;
+    var pct = boxes.length ? Math.round(100 * checked / boxes.length) : 0;
+    fill.style.width = pct + '%';
+    text.textContent = checked + ' / ' + boxes.length;
+  }
+
+  var state = load();
+  boxes.forEach(function(b){
+    var key = b.getAttribute('data-key');
+    if(state[key]) b.checked = true;
+    b.addEventListener('change', function(){
+      var s = load();
+      s[key] = b.checked;
+      save(s);
+      updateProgress();
+    });
+  });
+  updateProgress();
+
+  document.getElementById('resetChecklist').addEventListener('click', function(){
+    boxes.forEach(function(b){ b.checked = false; });
+    save({});
+    updateProgress();
+  });
+})();
+</script>
