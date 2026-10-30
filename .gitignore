@@ -1,2 +1,5 @@
 /runs
 /api/assessment_runs/
+/api/benchmark_results/
+/api/appearance_results/
+/api/final_evaluation/

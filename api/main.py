@@ -1,4 +1,4 @@
-"""Sample camera API."""
+﻿"""Sample camera API."""
 from pathlib import Path
 from threading import Lock
 from time import monotonic
@@ -7,6 +7,8 @@ from fastapi.responses import FileResponse
 from pydantic import BaseModel, Field
 from replay import CompletionTracker, sample_times
 from assessments import service
+from typing import Literal
+from run_chat import ask
 
 ROOT = Path(__file__).resolve().parent
 app = FastAPI(title='Filling line cameras')
@@ -42,6 +44,22 @@ def retry_assessment(job_id: str):
     except KeyError:
         raise HTTPException(404, 'Assessment not found') from None
     return {'status': 'ok'}
+
+class ChatMessage(BaseModel):
+    role: Literal['user', 'assistant']
+    content: str = Field(min_length=1, max_length=2000)
+
+class RunQuestion(BaseModel):
+    question: str = Field(min_length=1, max_length=500)
+    history: list[ChatMessage] = Field(default_factory=list, max_length=4)
+
+@app.post('/api/assessments/{run}/chat')
+def run_chat(run: str, body: RunQuestion):
+    question = body.question.strip()
+    if not question:
+        raise HTTPException(422, 'Enter a question.')
+    # Copy state under the service lock, then release before network inference.
+    return ask(question, service.list(run), [message.model_dump() for message in body.history])
 
 @app.post('/api/vial/observe')
 def observe(observation: Observation):
@@ -99,3 +117,4 @@ def observe(observation: Observation):
 if __name__ == '__main__':
     import uvicorn
     uvicorn.run(app, host='127.0.0.1', port=8000)
+

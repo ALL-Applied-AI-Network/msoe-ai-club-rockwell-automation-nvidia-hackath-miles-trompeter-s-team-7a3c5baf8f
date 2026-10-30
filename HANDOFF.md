@@ -374,3 +374,99 @@ Operator confirmed on 2026-10-30 that tank 100 is clear, 200 is orange, and 400
 is blue, constant across all days, recipes, and vials. These are now explicit in
 PROMPT and tank_colors.json. Tank 300 and concentrations remain unknown. Clear
 is an appearance description, not an assertion that the liquid is water.
+
+## Completed recipe-consistency benchmark
+
+Implemented api/benchmark.py and api/benchmark_report.py. Results are in the
+ignored api/benchmark_results/ directory, including REPORT.md, predictions.csv,
+metrics.json, confusion matrices, all crops and 90 cached Cosmos responses.
+30 vials, 3 folds, 30 original and 30 synthetic wrong recipe pairings. Final
+color baseline: recipe accuracy 13/30, mismatches detected 21/30, original
+pairings rejected 12/30. Cosmos reference-sheet evaluation: recipe accuracy 5/30,
+mismatches detected 3/30, original pairings rejected 0/30. No final errors or
+abstentions. This benchmark uses a dedicated reference-comparison prompt, not
+the production assessment prompt. It does not measure real contamination.
+ROI changed after inspection to exclude the rail; report records both results.
+Two artifact audit tests verify pairing balance, fold assignments and accuracy.
+
+## Hybrid inspection implementation
+
+api/hybrid.py freezes existing video-5 crops in content/hybrid_references.json,
+measures a fixed liquid ROI, excludes the target fold during replay, calibrates
+only from remaining references, and combines independent color/Cosmos evidence.
+api/assessments.py uses recipe-specific reference images plus target/tank context
+within two image slots. Color mismatch or visual mismatch -> review needed;
+both match -> consistent; missing/uncertain evidence -> insufficient evidence.
+The frontend shows the sampled region, swatch, distance, threshold and references.
+See api/HYBRID.md for protocol and limitations. In-person data is evaluation-only:
+never collect it for references, train on it, or tune against its outcomes.
+The current API remains video-5 replay; arbitrary live inputs are not implemented.
+
+## Active correction: appearance / carryover, not recipe matching
+
+The correct intended recipe must never be replaced to evaluate the actual task.
+Active assessment logic is now api/appearance.py. It measures multiple past/end
+frames, compares only earlier observed same-recipe vials online, and produces a
+separate retrospective three-vial sequence finding once later evidence exists.
+Cosmos describes appearance, not pass/fail. Old hybrid.py and recipe-mismatch
+benchmarks are auxiliary historical experiments, not the active decision policy.
+Descriptive audit: 30 measurable vials / 10 sequences; 3 possible carryover
+patterns, 1 other deviation, 2 no-clear-deviation, 4 insufficient evidence.
+These are heuristic findings, NOT ground truth. Accuracy/precision/recall unknown.
+See api/appearance_results/REPORT.md and api/HYBRID.md. In-person data remains
+strictly evaluation-only; no reference updates or tuning against it.
+
+## Project-description-aligned pre-test work
+
+Project description supplies batch quality assumptions: second/third are clean;
+first after recipe change carries over. Vial 1's predecessor is unknown.
+api/evaluate_project.py reports LORO and retrospective third-vial scoring
+separately; see api/final_evaluation/REPORT.md. Retrospective 19 scored targets:
+8 TP, 1 FN, 3 FP, 7 TN. LORO nearest-composition proxy flags every target.
+These are development results conditional on narrative-derived labels.
+api/inspection_context.py adds recipe constraints, transition explanation and
+uncalibrated visible-fill proxy; no mL measurement or control commands.
+Training audit confirmed current detector uses real station imagery from Roboflow,
+not digital-twin training. Twin/cap-seal assets not found; user asked for paths.
+Keep this compliance issue explicit. No retraining performed.
+
+## Current-run CSV export
+
+Frontend Export run CSV downloads all currently loaded assessments, including
+pending/errors, in timestamp order. Immediate and retrospective evidence have
+separate columns; no images/model descriptions included. Snapshot includes run ID
+and UTC export time. Helpers in client/src/exportRun.ts; build/lint and 7 frontend
+tests pass. Re-export after later fills finish; review filter never removes rows.
+
+## Read-only run questions
+Added backend run_chat.py and frontend RunChat.tsx. Verified counts/list responses
+are computed from unique vials; open-ended questions use the configured Cosmos
+model with bounded text-only snapshot/history. Snapshot facts appear separately
+from advisory model prose. No images or new collection; no control commands.
+6 chat unit tests and 7 frontend tests passed; build/lint clean. One live Cosmos
+chat request succeeded; model explanations remain unvalidated. Restart the API.
+
+## Single-frame baseline comparison
+
+api/evaluate_single_frame.py evaluates the same 19 retrospective targets/reference
+identities using (1) latest usable single frame, fixed distance threshold 3.0;
+(2) multi-frame median, fixed threshold 3.0; (3) existing multi-frame adaptive
+threshold. No sweeps or tuning. Single-frame and current FlowSight produce the
+same flags on every vial: TP8 FN1 FP3 TN7, 78.9% accuracy, 88.9% recall, 72.7%
+precision, 80% F1. Multi-frame fixed threshold adds one false alarm (73.7% accuracy).
+There is NO demonstrated detection advantage over the single-frame baseline.
+Report: docs/single-frame-baseline-results.md; raw CSV/metrics under ignored
+api/final_evaluation/single_frame_baseline/. These are development retrospective
+results, not independent plant evaluation or Cosmos explanation accuracy.
+
+## Expanded all-vial development evaluation
+
+api/evaluate_all_vials.py evaluates 30 targets with no self-reference: batch
+positions 1/2 use 3; position 3 uses 2. Vial 1 is predicted but unscored because
+its preceding transition/outcome is unknown. 29 scored: 8 TP, 1 FN, 6 FP, 14 TN.
+Accuracy 75.9%, recall 88.9%, precision 57.1%, F1 69.6%. Single-frame baseline
+remains tied. Reciprocal second/third comparisons are correlated; this is not
+additional independent data or stronger generalization evidence. Original 19
+predictions unchanged. This separate evaluation does not alter UI reference-only
+semantics. Report docs/all-vials-evaluation.md; new PNG/SVG confusion matrices in
+docs/confusion-matrix-all-vials.*. Original 19-vial report/figures remain preserved.
