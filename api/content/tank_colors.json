@@ -1,0 +1,39 @@
+{
+    "version":  2,
+    "image_context":  "Tank video frame selected at vial crop timestamp plus configured offset; recording alignment unverified.",
+    "position_provenance":  "Operator-confirmed left-to-right order recorded in HANDOFF.md",
+    "tanks":  {
+                  "100":  {
+                              "position_left_to_right":  1,
+                              "color":  "clear",
+                              "concentration":  null,
+                              "confirmed":  true,
+                              "confirmed_by":  "Operator confirmation in conversation; constant across all days, recipes, and vials",
+                              "confirmed_at":  "2026-10-30"
+                          },
+                  "200":  {
+                              "position_left_to_right":  2,
+                              "color":  "orange",
+                              "concentration":  null,
+                              "confirmed":  true,
+                              "confirmed_by":  "Operator confirmation in conversation; constant across all days, recipes, and vials",
+                              "confirmed_at":  "2026-10-30"
+                          },
+                  "300":  {
+                              "position_left_to_right":  3,
+                              "color":  null,
+                              "concentration":  null,
+                              "confirmed":  false,
+                              "confirmed_by":  null,
+                              "confirmed_at":  null
+                          },
+                  "400":  {
+                              "position_left_to_right":  4,
+                              "color":  "blue",
+                              "concentration":  null,
+                              "confirmed":  true,
+                              "confirmed_by":  "Operator confirmation in conversation; constant across all days, recipes, and vials",
+                              "confirmed_at":  "2026-10-30"
+                          }
+              }
+}

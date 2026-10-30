@@ -1,5 +1,8 @@
 # Vial detection and cropping with YOLO26
 
+For Cosmos Reason verification of a cropped vial against source jugs, a recipe,
+and previous results, see [color verification](models/color_verification/README.md).
+
 No major relabeling is needed. The Roboflow export has `Vial` (class 0)
 and `liquid` (class 1). Preparation copies the images and keeps only vial
 annotations in a separate dataset; the original export remains intact.
@@ -92,3 +95,77 @@ regenerate it if moving the dataset to another machine.
 Official references: [YOLO26](https://docs.ultralytics.com/models/yolo26/),
 [training](https://docs.ultralytics.com/modes/train/),
 [prediction and crops](https://docs.ultralytics.com/modes/predict/).
+
+## Camera replay dashboard
+
+Start the API from `api`: `uv sync`, then `uv run python main.py`.
+In another terminal, from `client`: `bun install`, then `bun run dev`.
+Open the Vite URL and click **Start cameras**. Both recordings share
+play/pause controls; the vial video is the playback clock. Vite proxies `/api`
+to port 8000 (also configured for `bun run preview`).
+
+The demo uses `content/vial_fill_video_5.mp4` and `content/tank_level_video_5.mp4`
+explicitly so recipe timestamps cannot accidentally attach to another recording.
+Videos are served with byte-range support; analysis uses the current vial
+playback timestamp and the newest trained `jar_crop/runs/train*/weights/best.pt`.
+
+The completion heuristic requires a jar center within 43-53% of frame width
+for at least one second, followed by a matching leftward departure. Matching
+allows fast conveyor steps and up to one second of missing detections, while
+checking vertical box alignment. A missing detection alone never triggers a crop.
+The last centered crop is retained to avoid displaying a blurred moving jar.
+These thresholds are calibrated to this fixed camera; they estimate completion
+from conveyor departure, not liquid flow or fill level.
+
+Analysis samples every 0.25 seconds in video order, processing at most eight
+frames per request. Slow inference creates a backlog instead of dropping frames
+or resetting jar history. The sidebar reports when analysis is catching up;
+pausing playback lets analysis finish the pending frames. Rewinding
+restarts analysis from the beginning. Viewer sessions expire after 30 minutes
+without observations. Regression fixtures include model detections for the first
+four departures (28.5, 75, 121.5, and 162.5 seconds) from the current vial video.
+
+Run tracker regression tests from `api`: `uv run python -m unittest test_replay -v`.
+
+### Tonight's Cosmos demonstration
+
+Keep the Cosmos server running on Brev, and run this in **local WSL**:
+
+```bash
+brev port-forward cosmos-reasoner --port 8001:8000
+```
+
+Set `COSMOS_BASE_URL=http://127.0.0.1:8001/v1`,
+`COSMOS_MODEL=nvidia/Cosmos-Reason2-8B`, and the running server's
+`COSMOS_API_KEY` in `api/.env`. Restart the API after changing environment settings.
+Keep the API and frontend terminals running, open the Vite URL, and start cameras.
+
+Each departure queues a separate background job. Jobs match crop time against
+`content/video5_vial_recipes.json`, with up to five seconds after fill end and
+never crossing the next fill start. Unmatched timestamps produce an error,
+not a guessed recipe. The first crop is around 28 seconds of video time.
+
+Jobs pair that crop with the static reference
+`samples/tank_level_20260922_170432_316717 (1).jpg`. Tank IDs are ordered
+100, 200, 300, 400 from left to right. The moving tank video is a display feed;
+the model uses the supplied static screenshot. The preceding three recipes
+are included as unreviewed context, never as known-good results.
+
+The assessment history shows queued/running/error states and the model's plain-text
+answer: Looks good / Doesn't look good / Uncertain, with observations and possible
+causes. Errors can be retried. Inference is serial and never holds up camera
+analysis. Pausing playback still lets detection catch up and assessments finish.
+The recordings stop at the end, avoiding repeated inference on automatic loops.
+
+Each job is saved under `api/assessment_runs/` with its crop, tank screenshot,
+recipe, prompt, model (on success), and answer. These local artifacts are git-ignored.
+The live history is scoped to the current replay session; refreshing the browser
+starts a new session. Saved files remain available after API restarts, but pending
+jobs are not automatically resumed and past sessions are not reloaded into the UI.
+
+This demo does not use the older strict-JSON `verify_color` client. It displays
+model text without treating it as a verified quality label. Source-color recognition
+and mixture reasoning can be wrong; photos cannot establish actual dispensing
+ratios, dye concentrations, contamination, or chemical quality. Review all judgments.
+
+Validate with `uv run python -m unittest test_assessments test_replay`.

@@ -1,0 +1,12 @@
+[
+  {
+    "recipe": "20 mL from jug A (left, blue) and 20 mL from jug B (middle, yellow)",
+    "good": true,
+    "notes": "Accepted green result. Shared tubing was not flushed afterward."
+  },
+  {
+    "recipe": "40 mL from jug C (right, clear)",
+    "good": false,
+    "notes": "Result had a faint green tint. Cause was not confirmed."
+  }
+]
