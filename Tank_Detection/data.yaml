@@ -1,0 +1,15 @@
+# Dataset layout expected by Ultralytics:
+#   dataset/images/train/*.jpg    dataset/labels/train/*.txt
+#   dataset/images/val/*.jpg      dataset/labels/val/*.txt
+#
+# Label every large tank in each image with a box and one of the two classes below:
+#   tank_good = tank has enough liquid
+#   tank_low = tank is running low
+
+path: C:/Users/bmora/OneDrive/Documents/VS CODE/ROCKWELL_NIVIDIA/Tank_Detection/train  # REPLACE WITH THE FOLDER THAT HOLDS YOUR images/ AND labels/ FOLDERS
+train: C:/Users/bmora/OneDrive/Documents/VS CODE/ROCKWELL_NIVIDIA/Tank_Detection/train  # REPLACE ONLY IF YOUR TRAINING IMAGES FOLDER HAS A DIFFERENT NAME
+val: C:/Users/bmora/OneDrive/Documents/VS CODE/ROCKWELL_NIVIDIA/Tank_Detection/train  # REPLACE ONLY IF YOUR VALIDATION IMAGES FOLDER HAS A DIFFERENT NAME
+
+names:
+  0: tank_good  # REPLACE ONLY IF YOU WANT A DIFFERENT NAME FOR "TANK HAS ENOUGH LIQUID" (KEEP IT THE SAME IN monitor_yolo.py)
+  1: tank_low  # REPLACE ONLY IF YOU WANT A DIFFERENT NAME FOR "TANK IS LOW" (KEEP IT THE SAME IN monitor_yolo.py)
